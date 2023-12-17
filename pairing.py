@@ -14,22 +14,22 @@ def create_secret_santa_pairs(df):
 
     # Create pairs
     pairs = []
-    receivers = df['Name'].tolist()
+    receivers = df[['Name', 'Email']].to_dict(orient='records')
 
-    for giver in df['Name']:
-        available_receivers = [receiver for receiver in receivers if receiver != giver]
+    for giver in df[['Name', 'Email']].to_dict(orient='records'):
+        available_receivers = [receiver for receiver in receivers if receiver['Name'] != giver['Name']]
         if not available_receivers:
             raise ValueError("Error: Unable to create pairs. Please check your input data.")
 
         receiver = random.choice(available_receivers)
-        pairs.append((giver, receiver))
+        pairs.append({'Giver': giver['Name'], 'Giver_Email': giver['Email'], 'Receiver': receiver['Name'], 'Receiver_Email': receiver['Email']})
         receivers.remove(receiver)
 
     return pairs
 
 def write_to_excel(pairs, output_file):
     # Create a DataFrame from the pairs
-    df_result = pd.DataFrame(pairs, columns=['Giver', 'Receiver'])
+    df_result = pd.DataFrame(pairs, columns=['Giver', 'Giver_Email', 'Receiver'])
 
     # Write the DataFrame to an Excel file
     df_result.to_excel(output_file, index=False)
